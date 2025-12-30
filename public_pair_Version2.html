@@ -1,0 +1,92 @@
+<!doctype html>
+<html>
+<head>
+  <meta charset="utf-8" />
+  <title>ELIAKIM-MD Pairing</title>
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <style>
+    body { font-family: Arial, sans-serif; max-width:700px; margin:40px auto; padding:20px; }
+    label { display:block; margin-bottom:8px; }
+    input[type="text"]{ width:100%; padding:8px; margin-bottom:12px; }
+    button { padding:10px 14px; margin-right:10px; }
+    pre { background:#f6f6f6; padding:10px; white-space:pre-wrap; word-break:break-word; }
+    .ok { color: green; }
+  </style>
+</head>
+<body>
+  <h1>ELIAKIM-MD Pairing UI</h1>
+  <p>Enter your phone number (for logs only) and click "Generate pairing". The current pairing payload text will be displayed below and you can copy it to clipboard.</p>
+
+  <label for="phone">Phone number (international, e.g. +1415xxxxxxx)</label>
+  <input id="phone" type="text" placeholder="+1234567890" />
+
+  <div>
+    <button id="gen">Generate pairing</button>
+    <button id="copy" disabled>Copy to clipboard</button>
+    <span id="status"></span>
+  </div>
+
+  <h3>Pairing payload (text)</h3>
+  <pre id="pairing">No pairing payload available yet.</pre>
+
+  <script>
+    const genBtn = document.getElementById('gen');
+    const copyBtn = document.getElementById('copy');
+    const pairingEl = document.getElementById('pairing');
+    const statusEl = document.getElementById('status');
+
+    async function fetchPairing() {
+      statusEl.textContent = 'Requesting pairing payload...';
+      try {
+        const res = await fetch('/pair');
+        const j = await res.json();
+        if (j.ok && j.pairing) {
+          pairingEl.textContent = j.pairing;
+          copyBtn.disabled = false;
+          statusEl.textContent = 'Pairing payload ready (updated: ' + new Date(j.updatedAt).toLocaleString() + ')';
+          statusEl.className = 'ok';
+        } else {
+          pairingEl.textContent = j.message || JSON.stringify(j);
+          copyBtn.disabled = true;
+          statusEl.textContent = 'No payload available yet.';
+          statusEl.className = '';
+        }
+      } catch (err) {
+        pairingEl.textContent = 'Error fetching pairing: ' + err;
+        copyBtn.disabled = true;
+        statusEl.textContent = 'Error';
+        statusEl.className = '';
+      }
+    }
+
+    genBtn.addEventListener('click', async () => {
+      // for now, "generate" simply queries the server for the current pairing payload
+      // we include the phone in the query for logs if desired
+      const phone = document.getElementById('phone').value.trim();
+      statusEl.textContent = 'Requesting pairing payload...';
+      await fetchPairing();
+      // copy automatically
+      if (!copyBtn.disabled) {
+        try {
+          await navigator.clipboard.writeText(pairingEl.textContent);
+          statusEl.textContent = 'Pairing payload copied to clipboard';
+        } catch (err) {
+          statusEl.textContent = 'Pairing available; failed to auto-copy: ' + err;
+        }
+      }
+    });
+
+    copyBtn.addEventListener('click', async () => {
+      try {
+        await navigator.clipboard.writeText(pairingEl.textContent);
+        statusEl.textContent = 'Copied to clipboard';
+      } catch (err) {
+        statusEl.textContent = 'Copy failed: ' + err;
+      }
+    });
+
+    // Optionally poll for new pairing payload every 3s while page is open
+    setInterval(fetchPairing, 3000);
+  </script>
+</body>
+</html>

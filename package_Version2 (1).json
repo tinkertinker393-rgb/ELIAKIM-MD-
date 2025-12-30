@@ -1,0 +1,24 @@
+{
+  "name": "eliakim-md",
+  "version": "0.1.0",
+  "description": "ELIAKIM-MD WhatsApp Multi-Device bot scaffold",
+  "main": "index.js",
+  "scripts": {
+    "start": "node index.js",
+    "dev": "NODE_ENV=development node index.js"
+  },
+  "author": "yourname",
+  "license": "MIT",
+  "dependencies": {
+    "@whiskeysockets/baileys": "^5.0.0",
+    "express": "^4.18.2",
+    "pino": "^8.12.0",
+    "fs-extra": "^11.1.1",
+    "qrcode-terminal": "^0.12.0",
+    "fluent-ffmpeg": "^2.1.2",
+    "ytdl-core": "^4.11.0",
+    "node-fetch": "^3.3.2",
+    "mime-types": "^2.1.35",
+    "lru-cache": "^10.1.0"
+  }
+}
