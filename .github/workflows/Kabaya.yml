@@ -1,0 +1,32 @@
+name: Run ELIAKIM-MD on self-hosted runner
+
+on:
+  workflow_dispatch:
+
+jobs:
+  run-bot:
+    runs-on: self-hosted
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: '18'
+
+      - name: Install dependencies
+        run: npm ci
+
+      - name: Ensure session dir
+        run: |
+          mkdir -p session
+          mkdir -p data
+
+      - name: Start bot (long-running)
+        # This will run on the self-hosted runner and keep running. If you want to manage with PM2/systemd,
+        # replace this step with the appropriate service install and start commands.
+        run: |
+          nohup npm start > eliakim.log 2>&1 &
+          sleep 1
+          echo "ELIAKIM-MD started, logs at eliakim.log"
